@@ -29,7 +29,7 @@ class User(db.Model, UserMixin): # 表名将会是 user（自动生成，小写�
     def set_password(self, password): # 用来设置密码的方法，接收密码作为参数
         self.password_hash = generate_password_hash(password)  # 将生成的密码散列值保持到对应字段
 
-    def vaildate_password(self, password):  # 用于验证密码的方法，接收密码作为参数
+    def validate_password(self, password):  # 用于验证密码的方法，接收密码作为参数
         return check_password_hash(self.password_hash, password)  # 返回布尔值
 
 class Movie(db.Model): # 表名将会是 movie
@@ -42,7 +42,7 @@ login_manager.login_view = 'login' # 设置登录视图函数的名字
 
 @login_manager.user_loader
 def load_user(user_id):  # 创建用户加载回调函数，接受用户 ID 作为参数
-    user = User.query.get(int(user_id))  # 用 ID 作为 User 模型的主键查询对应的用户
+    user = db.session.get(User, int(user_id))  # 用 ID 作为 User 模型的主键查询对应的用户
     return user  # 返回用户对象
 
 @app.cli.command() # 声明为命令
@@ -82,7 +82,7 @@ def forge():
         db.session.add(movie)
 
     db.session.commit()
-    click.echo('Forge done.')
+    click.echo('Done.')
 
 @app.cli.command()
 @click.option('--username', prompt=True, help='The username used to login.')
@@ -154,7 +154,7 @@ def edit(movie_id):
         movie.title = title # 更新标题
         movie.year = year # 更新年份
         db.session.commit() # 提交数据库会话
-        flash('Item Updated.')
+        flash('Item updated.')
         return redirect(url_for('index')) # 重定向回主页
 
     return render_template('edit.html', movie=movie) # 传入电影数据到模板
@@ -179,17 +179,17 @@ def login():
         password = request.form['password']
 
         if not username or not password:
-            flash('Invalid input')
+            flash('Invalid input.')
             return redirect(url_for('login'))
 
         user = User.query.first()
         # 验证用户名和密码是否正确
-        if username == user.username and user.vaildate_password(password):
+        if username == user.username and user.validate_password(password):
             login_user(user)  # 登入用户
             flash('Login success.')
             return redirect(url_for('index'))  # 重定向到主页
 
-        flash('Invaild username or password.')  # 错误提示
+        flash('Invalid username or password.')  # 错误提示
         return redirect(url_for('login'))  # 重定向回登录页面
 
     return render_template('login.html')
@@ -216,7 +216,7 @@ def settings():
         # user = User.query.first()
         # user.name = name
         db.session.commit()
-        flash('Setting updated.')
+        flash('Settings updated.')
         return redirect(url_for('index'))
 
     return render_template('settings.html')
