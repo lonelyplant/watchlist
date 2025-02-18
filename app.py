@@ -42,7 +42,7 @@ login_manager.login_view = 'login' # 设置登录视图函数的名字
 
 @login_manager.user_loader
 def load_user(user_id):  # 创建用户加载回调函数，接受用户 ID 作为参数
-    user = db.session.get(User, int(user_id))  # 用 ID 作为 User 模型的主键查询对应的用户
+    user = db.session.get(User, int(user_id)) # 用 ID 作为 User 模型的主键查询对应的用户
     return user  # 返回用户对象
 
 @app.cli.command() # 声明为命令
@@ -112,7 +112,7 @@ def inject_user():
 
 @app.errorhandler(404) # 传入要处理的错误代码
 def page_not_found(e): # 接收异常对象作为参数
-    return render_template('404.html'), 404 # 返回模板和状态码
+    return render_template('errors/404.html'), 404 # 返回模板和状态码
 
 app.config['SECRET_KEY'] = 'dev' # 设置一个可配置的密钥
 
@@ -141,7 +141,7 @@ def index():
 @app.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
 @login_required
 def edit(movie_id):
-    movie = Movie.query.get_or_404(movie_id)
+    movie = db.get_or_404(Movie, movie_id)
 
     if request.method == 'POST': # 处理编辑表单的提交请求
         title = request.form['title']
@@ -162,7 +162,7 @@ def edit(movie_id):
 @app.route('/movie/delete/<int:movie_id>', methods=['POST']) # 仅接受 POST 请求
 @login_required  # 登录保护
 def delete(movie_id):
-    movie = Movie.query.get_or_404(movie_id) # 获取电影记录
+    movie = db.get_or_404(Movie, movie_id) # 获取电影记录
     db.session.delete(movie) # 删除对应的记录
     db.session.commit() # 提交数据库会话
     flash('Item deleted.')

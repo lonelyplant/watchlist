@@ -1,6 +1,8 @@
 import unittest
 from app import app, db, Movie, User, forge, initdb
-
+from watchlist import app, db
+from watchlist.models import Movie, User
+from watchlist.commands import forge, initdb
 
 class WatchlistTestCase(unittest.TestCase):
 
@@ -10,6 +12,9 @@ class WatchlistTestCase(unittest.TestCase):
             TESTING=True,
             SQLALCHEMY_DATABASE_URL='sqlite:///:memory:'
         )
+        # 手动创建应用上下文
+        self.app_context = app.app_context()
+        self.app_context.push()
         # 创建数据库和表
         db.create_all()
         # 创建测试数据，一个用户，一个电影条目
@@ -26,6 +31,7 @@ class WatchlistTestCase(unittest.TestCase):
     def tearDown(self):
         db.session.remove()  # 移除数据库会话
         db.drop_all()  # 删除数据库表
+        self.app_context.pop()  # 释放应用上下文
 
     # 测试程序实例是否存在
     def test_app_exist(self):
@@ -244,7 +250,7 @@ class WatchlistTestCase(unittest.TestCase):
     # 测试初始化数据库
     def test_initdb_command(self):
         result = self.runner.invoke(initdb)
-        self.assertIn('Initialized database', result.output)
+        self.assertIn('Initialized database.', result.output)
 
     # 测试生成管理员账户
     def test_admin_command(self):
