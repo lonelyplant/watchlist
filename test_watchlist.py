@@ -1,27 +1,22 @@
 import unittest
-from app import app, db, Movie, User, forge, initdb
-from watchlist import app, db
+
+from watchlist import  app, db
 from watchlist.models import Movie, User
 from watchlist.commands import forge, initdb
+
 
 class WatchlistTestCase(unittest.TestCase):
 
     def setUp(self):
-        # 更新配置
         app.config.update(
             TESTING=True,
-            SQLALCHEMY_DATABASE_URL='sqlite:///:memory:'
+            SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
         )
-        # 手动创建应用上下文
-        self.app_context = app.app_context()
-        self.app_context.push()
-        # 创建数据库和表
         db.create_all()
-        # 创建测试数据，一个用户，一个电影条目
+
         user = User(name='Test', username='test')
         user.set_password('123')
         movie = Movie(title='Test Movie Title', year='2019')
-        # 使用 add_all() 方法一次添加多个模型类实例，传入列表。
         db.session.add_all([user, movie])
         db.session.commit()
 
@@ -31,7 +26,6 @@ class WatchlistTestCase(unittest.TestCase):
     def tearDown(self):
         db.session.remove()  # 移除数据库会话
         db.drop_all()  # 删除数据库表
-        self.app_context.pop()  # 释放应用上下文
 
     # 测试程序实例是否存在
     def test_app_exist(self):
