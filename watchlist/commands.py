@@ -1,7 +1,7 @@
 import click
 
 from watchlist import app, db
-from watchlist.models import User, Movie
+from watchlist.models import User, Movie, Comment
 
 
 @app.cli.command()  # 创建一个命令行命令
@@ -10,6 +10,7 @@ def initdb(drop):
     """Initialize the database"""
     if drop:
         db.drop_all()
+        click.echo('Dropped database.')
     db.create_all()
     click.echo('Initialized database.')
 
@@ -31,13 +32,27 @@ def forge():
         {'title': 'WALL-E', 'year': '2008'},
         {'title': 'The Pork of Music', 'year': '2012'}
     ]
+    comments = [
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'},
+        {'comment': 'This is a comment.'}
+   ]
 
     user = User(name=name)
     db.session.add(user)
     for m in movies:
         movie = Movie(title=m['title'], year=m['year'])
         db.session.add(movie)
-
+    for c in comments:
+        comment = Comment(comment=c['comment'])
+        db.session.add(comment)
     db.session.commit()
     click.echo('Done.')
 

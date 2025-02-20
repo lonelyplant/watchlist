@@ -20,3 +20,7 @@ class Movie(db.Model):  # 电影模型
     id = db.Column(db.Integer, primary_key=True)  # 主键
     title = db.Column(db.String(60))  # 电影标题
     year = db.Column(db.String(4))  # 电影年份
+
+class Comment(db.Model):  # 留言模型
+    id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.String(100))

@@ -1,23 +1,25 @@
 import unittest
 
 from watchlist import  app, db
-from watchlist.models import Movie, User
+from watchlist.models import Movie, User, Comment
 from watchlist.commands import forge, initdb
 
 
 class WatchlistTestCase(unittest.TestCase):
 
     def setUp(self):
+        from watchlist import prefix
         app.config.update(
             TESTING=True,
-            SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
+            SQLALCHEMY_DATABASE_URI=prefix + ':memory:'
         )
         db.create_all()
 
         user = User(name='Test', username='test')
         user.set_password('123')
         movie = Movie(title='Test Movie Title', year='2019')
-        db.session.add_all([user, movie])
+        comment = Comment(comment='Test Comment')
+        db.session.add_all([user, movie, comment])
         db.session.commit()
 
         self.client = app.test_client()  # 创建测试客户端
@@ -44,11 +46,19 @@ class WatchlistTestCase(unittest.TestCase):
 
     # 测试主页
     def test_index_page(self):
+
+        # 测试主页是否正常打开
         response = self.client.get('/')
         data = response.get_data(as_text=True)
         self.assertIn('Test\'s Watchlist', data)
         self.assertIn('Test Movie Title', data)
         self.assertEqual(response.status_code, 200)
+
+        # 测试不登录直接发送POST请求（模拟未认证用户）
+        response = self.client.post('/', data={}, follow_redirects=False)
+        # 验证重定向状态码和跳转路径
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, '/')
 
     # 辅助方法，用于登入用户
     def login(self):
@@ -235,6 +245,23 @@ class WatchlistTestCase(unittest.TestCase):
         self.assertNotIn('Settings updated.', data)
         self.assertIn('Invalid input.', data)
 
+    # 测试评论
+    def test_comment(self):
+        self.login()
+
+        # 测试展示评论
+        response = self.client.get('/comments')
+        data = response.get_data(as_text=True)
+        self.assertIn('Test Comment', data)
+
+        # 测试发布评论
+        response = self.client.post('/comments', data=dict(
+            comment='It is a good movie.'
+        ), follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertIn('Comment posted.', data)
+        self.assertIn('It is a good movie.', data)
+
     # 测试虚拟数据
     def test_forge_command(self):
         result = self.runner.invoke(forge)
@@ -244,6 +271,12 @@ class WatchlistTestCase(unittest.TestCase):
     # 测试初始化数据库
     def test_initdb_command(self):
         result = self.runner.invoke(initdb)
+        self.assertNotIn('Dropped database.', result.output)
+        self.assertIn('Initialized database.', result.output)
+
+        # 测试删除数据并初始化数据库
+        result = self.runner.invoke(initdb, ['--drop'])
+        self.assertIn('Dropped database.', result.output)
         self.assertIn('Initialized database.', result.output)
 
     # 测试生成管理员账户

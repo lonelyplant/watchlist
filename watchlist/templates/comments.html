@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Say something</h3>
+<form method="post">
+    <textarea name="comment" id="" cols="30" rows="10"></textarea>
+    <input type="submit" name="comment" value="sumbit">
+</form>
+{% for comment in comments %}
+<div>
+    <p>{{ comment.comment }}</p>
+</div>
+{% endfor %}
+{% endblock %}

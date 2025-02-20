@@ -3,7 +3,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 
 
 from watchlist import app, db
-from watchlist.models import User, Movie
+from watchlist.models import User, Movie, Comment
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -105,3 +105,15 @@ def logout():
     flash('Goodbye.')
     return redirect(url_for('index'))
 
+@app.route('/comments', methods=['GET', 'POST'])
+def comments():
+    if request.method == 'POST':
+        comment_text = request.form['comment']
+        comment = Comment(comment=comment_text)
+        db.session.add(comment)
+        db.session.commit()
+        flash('Comment posted.')
+        return redirect(url_for('comments'))
+
+    comments = Comment.query.all()
+    return render_template('comments.html', comments=comments)
