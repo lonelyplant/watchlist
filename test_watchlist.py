@@ -256,11 +256,24 @@ class WatchlistTestCase(unittest.TestCase):
 
         # 测试发布评论
         response = self.client.post('/comments', data=dict(
-            comment='It is a good movie.'
+            comment_text='It is a good movie.'
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertIn('Comment posted.', data)
         self.assertIn('It is a good movie.', data)
+
+        # 测试未填写评论时发布评论
+        response = self.client.post('/comments', data=dict(
+            comment=''
+        ), follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertIn('Invalid comment.', data)
+
+        # 测试删除评论
+        response = self.client.post('/comment/delete/1', follow_redirects=True)
+        data = response.get_data(as_text=True)
+        self.assertIn('Comment deleted.', data)
+        self.assertNotIn('Test Comment', data)
 
     # 测试虚拟数据
     def test_forge_command(self):

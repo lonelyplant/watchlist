@@ -108,12 +108,24 @@ def logout():
 @app.route('/comments', methods=['GET', 'POST'])
 def comments():
     if request.method == 'POST':
-        comment_text = request.form['comment']
+        comment_text = request.form.get('comment_text')
+        if not comment_text or len(comment_text) > 100:
+            flash('Invalid comment.')
+            return redirect(url_for('comments'))
         comment = Comment(comment=comment_text)
         db.session.add(comment)
         db.session.commit()
         flash('Comment posted.')
         return redirect(url_for('comments'))
 
-    comments = Comment.query.all()
-    return render_template('comments.html', comments=comments)
+    comment_list = Comment.query.all()
+    return render_template('comments.html', comments=comment_list)
+
+@app.route('/comment/delete/<int:comment_id>', methods=['POST'])
+@login_required
+def comment_delete(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    db.session.delete(comment)
+    db.session.commit()
+    flash('Comment deleted.')
+    return redirect(url_for('comments'))

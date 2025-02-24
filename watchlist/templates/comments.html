@@ -2,13 +2,22 @@
 
 {% block content %}
 <h3>Say something</h3>
-<form method="post">
-    <textarea name="comment" id="" cols="30" rows="10"></textarea>
-    <input type="submit" name="comment" value="sumbit">
+<form method="post" class="pure-form pure-g">
+    <textarea name="comment_text" id="" cols="30" rows="5" placeholder="..." minlength="10" class="pure-u-4-5"></textarea>
+    <button type="submit" name="submit" class="pure-button pure-button-primary pure-u-1-5 submit-button">Submit</button>
 </form>
-{% for comment in comments %}
-<div>
-    <p>{{ comment.comment }}</p>
-</div>
-{% endfor %}
+<form method="post">
+    <ul class="comment-list">
+        {% for comment in comments %}
+        <li>
+        {{ comment.comment }}
+            {% if current_user.is_authenticated %}
+            <input class="float-right btn-delete" value="Delete" type="submit" name="delete"
+                   formaction="{{ url_for('comment_delete', comment_id=comment.id) }}"
+                   onclick="return confirm('Are you sure?')">
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</form>
 {% endblock %}
