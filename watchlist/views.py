@@ -25,8 +25,13 @@ def index():
         flash('Item created.')
         return redirect(url_for('index'))
 
-    movies = Movie.query.all()
-    return render_template('index.html', movies=movies) # 模板渲染
+    # 分页逻辑
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    pagination = Movie.query.order_by(Movie.id.desc()).paginate(page=page, per_page=per_page)
+
+    movies = pagination.items
+    return render_template('index.html', movies=movies, pagination=pagination) # 模板渲染
 
 @app.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
 @login_required

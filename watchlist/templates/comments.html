@@ -1,18 +1,25 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h3>Say something</h3>
-<form method="post" class="pure-form pure-g">
-    <textarea name="comment_text" id="" cols="30" rows="5" placeholder="..." minlength="10" class="pure-u-4-5"></textarea>
-    <button type="submit" name="submit" class="pure-button pure-button-primary pure-u-1-5 submit-button">Submit</button>
+<h3 class="mt-3">Say something</h3>
+<form method="post" class="row gy-3">
+    <div class="col-12">
+        <textarea name="comment_text" cols="30" rows="3" placeholder="..." minlength="10"
+                  class="form-control"></textarea>
+    </div>
+    <div class="col-auto">
+<!--    <button type="submit" name="submit" class="pure-button pure-button-primary submit-button">Submit</button>-->
+        <button type="submit" name="submit" class="btn btn-outline-dark">Submit</button>
+    </div>
 </form>
+<p class="mt-3">{{ comments|length }} Comments.</p>
 <form method="post">
-    <ul class="comment-list">
+    <ul class="list-group">
         {% for comment in comments %}
-        <li>
+        <li class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
         {{ comment.comment }}
             {% if current_user.is_authenticated %}
-            <input class="float-right btn-delete" value="Delete" type="submit" name="delete"
+            <input class="float-right btn btn-outline-danger" value="Delete" type="submit" name="delete"
                    formaction="{{ url_for('comment_delete', comment_id=comment.id) }}"
                    onclick="return confirm('Are you sure?')">
             {% endif %}
